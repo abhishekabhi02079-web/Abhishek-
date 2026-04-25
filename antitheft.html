@@ -1,0 +1,1629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SecureGuard - Anti-Theft Protection</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-dark: #0f0c29;
+      --bg-gradient: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+      --sidebar-bg: linear-gradient(180deg, #1a1a3e 0%, #141428 100%);
+      --card-bg: rgba(255, 255, 255, 0.08);
+      --card-bg-solid: #1e1e3f;
+      --card-border: rgba(255, 255, 255, 0.12);
+      --primary: #00d9ff;
+      --primary-dim: #0099cc;
+      --primary-glow: rgba(0, 255, 225, 0.4);
+      --warning: #ff6b35;
+      --danger: #ff3366;
+      --danger-dim: #cc0044;
+      --success: #00ff88;
+      --text-primary: #ffffff;
+      --text-secondary: #b8c5d6;
+      --text-muted: #6b7a94;
+      --accent-purple: #a855f7;
+      --accent-pink: #ec4899;
+    }
+
+    body {
+      font-family: 'DM Sans', 'Segoe UI', sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 260px;
+      background: var(--sidebar-bg);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--card-border);
+      position: fixed;
+      height: 100vh;
+      z-index: 100;
+      box-shadow: 4px 0 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 2rem;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--primary), var(--accent-purple));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      box-shadow: 0 4px 15px var(--primary-glow);
+    }
+
+    .logo-text {
+      font-size: 1.25rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--primary), var(--accent-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .nav {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .nav-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-primary);
+    }
+
+    .nav-item.active {
+      background: linear-gradient(90deg, rgba(0, 217, 255, 0.2), rgba(168, 85, 247, 0.2));
+      color: var(--primary);
+      box-shadow: 0 0 20px var(--primary-glow);
+    }
+
+    .nav-item svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .nav-item .badge {
+      margin-left: auto;
+      background: var(--danger);
+      color: white;
+      font-size: 0.7rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+
+    .device-status {
+      margin-top: auto;
+      padding: 1rem;
+      background: linear-gradient(135deg, rgba(0, 217, 255, 0.15), rgba(168, 85, 247, 0.15));
+      border-radius: 12px;
+      border: 1px solid rgba(0, 217, 255, 0.3);
+      box-shadow: 0 0 20px rgba(0, 217, 255, 0.1);
+    }
+
+    .device-status.armed {
+      background: linear-gradient(135deg, rgba(0, 217, 255, 0.15), rgba(168, 85, 247, 0.15));
+      border-color: rgba(0, 217, 255, 0.3);
+    }
+
+    .device-status.disarmed {
+      background: linear-gradient(135deg, rgba(255, 107, 53, 0.15), rgba(255, 51, 102, 0.15));
+      border-color: rgba(255, 107, 53, 0.3);
+    }
+
+    .status-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    .armed .status-dot {
+      background: var(--primary);
+      box-shadow: 0 0 15px var(--primary);
+    }
+
+    .disarmed .status-dot {
+      background: var(--warning);
+      box-shadow: 0 0 15px var(--warning);
+    }
+
+    .device-name {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* Main Content */
+    .main {
+      flex: 1;
+      margin-left: 260px;
+      padding: 1.5rem;
+      min-height: 100vh;
+    }
+
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    .page-header {
+      margin-bottom: 1.5rem;
+    }
+
+    .page-title {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+
+    .page-subtitle {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .card:hover {
+      border-color: rgba(0, 217, 255, 0.4);
+      box-shadow: 0 8px 32px rgba(0, 217, 255, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .card-title {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Dashboard Grid */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+
+    .security-score-card {
+      grid-column: span 2;
+    }
+
+    .score-display {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .score-circle {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: conic-gradient(var(--primary) 0deg, var(--primary) 342deg, var(--card-border) 342deg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      box-shadow: 0 0 40px var(--primary-glow);
+    }
+
+    .score-circle::before {
+      content: '';
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      background: var(--card-bg-solid);
+      border-radius: 50%;
+    }
+
+    .score-value {
+      position: relative;
+      font-size: 2rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--primary), var(--accent-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .score-label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    .score-details {
+      flex: 1;
+    }
+
+    .score-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .score-item:last-child {
+      border-bottom: none;
+    }
+
+    .score-item-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+    }
+
+    .score-item-icon.green {
+      background: rgba(16, 185, 129, 0.2);
+      color: var(--primary);
+    }
+
+    .score-item-icon.amber {
+      background: rgba(245, 158, 11, 0.2);
+      color: var(--warning);
+    }
+
+    .score-item-icon.red {
+      background: rgba(239, 68, 68, 0.2);
+      color: var(--danger);
+    }
+
+    /* Status Card */
+    .status-card {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .arm-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .toggle-switch {
+      width: 56px;
+      height: 28px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .toggle-switch.active {
+      background: linear-gradient(90deg, var(--primary), var(--accent-purple));
+      box-shadow: 0 0 15px var(--primary-glow);
+    }
+
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      background: white;
+      border-radius: 50%;
+      top: 2px;
+      left: 3px;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .toggle-switch.active::after {
+      left: 29px;
+    }
+
+    .last-arm {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* Device Info */
+    .device-info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+
+    .info-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .info-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .info-value {
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    /* Location */
+    .location-map {
+      height: 200px;
+      background: linear-gradient(135deg, #1e1e3f, #141428);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+      position: relative;
+      overflow: hidden;
+      box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .location-map::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, transparent 49%, rgba(0, 217, 255, 0.1) 49%, rgba(0, 217, 255, 0.1) 51%, transparent 51%),
+        linear-gradient(0deg, transparent 49%, rgba(0, 217, 255, 0.1) 49%, rgba(0, 217, 255, 0.1) 51%, transparent 51%);
+      background-size: 30px 30px;
+      opacity: 0.5;
+    }
+
+    .map-marker {
+      position: relative;
+      z-index: 1;
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--primary), var(--accent-purple));
+      border-radius: 50% 50% 50% 0;
+      transform: rotate(-45deg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 25px var(--primary-glow);
+    }
+
+    .map-marker::after {
+      content: '';
+      width: 16px;
+      height: 16px;
+      background: white;
+      border-radius: 50%;
+    }
+
+    .location-coords {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    .location-history {
+      margin-top: 1rem;
+    }
+
+    .location-history-title {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .location-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 6px;
+      margin-bottom: 0.5rem;
+      font-size: 0.8rem;
+    }
+
+    .location-item-time {
+      color: var(--text-muted);
+      min-width: 60px;
+    }
+
+    /* Battery & SIM */
+    .battery-display {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .battery-icon {
+      width: 50px;
+      height: 24px;
+      border: 2px solid var(--primary);
+      border-radius: 4px;
+      position: relative;
+      padding: 2px;
+    }
+
+    .battery-icon::after {
+      content: '';
+      position: absolute;
+      right: -6px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 4px;
+      height: 10px;
+      background: var(--primary);
+      border-radius: 0 2px 2px 0;
+    }
+
+    .battery-level {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), var(--accent-purple));
+      border-radius: 2px;
+      width: 78%;
+      box-shadow: 0 0 10px var(--primary-glow);
+    }
+
+    .battery-level.warning {
+      background: linear-gradient(90deg, var(--warning), #ea580c);
+    }
+
+    .battery-level.critical {
+      background: linear-gradient(90deg, var(--danger), var(--danger-dim));
+    }
+
+    .battery-text {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .battery-status {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    .sim-status {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .sim-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, rgba(0, 217, 255, 0.25), rgba(168, 85, 247, 0.25));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      font-size: 1.25rem;
+      box-shadow: 0 4px 15px rgba(0, 217, 255, 0.2);
+    }
+
+    .sim-icon.warning {
+      background: linear-gradient(135deg, rgba(255, 107, 53, 0.25), rgba(234, 88, 12, 0.25));
+      color: var(--warning);
+    }
+
+    .sim-icon.danger {
+      background: linear-gradient(135deg, rgba(255, 51, 102, 0.25), rgba(204, 0, 68, 0.25));
+      color: var(--danger);
+    }
+
+    /* Controls */
+    .controls-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+
+    .control-btn {
+      padding: 1.25rem;
+      border-radius: 12px;
+      border: 1px solid var(--card-border);
+      background: var(--card-bg);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .control-btn:hover {
+      transform: translateY(-2px);
+      border-color: rgba(0, 217, 255, 0.4);
+      box-shadow: 0 8px 25px rgba(0, 217, 255, 0.2);
+    }
+
+    .control-btn:active {
+      transform: scale(0.98);
+    }
+
+    .control-btn-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      text-shadow: 0 0 10px currentColor;
+    }
+
+    .control-btn.lock .control-btn-icon {
+      background: linear-gradient(135deg, rgba(0, 217, 255, 0.3), rgba(0, 153, 204, 0.3));
+      color: #00d9ff;
+      box-shadow: 0 4px 15px rgba(0, 217, 255, 0.3);
+    }
+
+    .control-btn.alarm .control-btn-icon {
+      background: linear-gradient(135deg, rgba(255, 51, 102, 0.3), rgba(204, 0, 68, 0.3));
+      color: #ff3366;
+      box-shadow: 0 4px 15px rgba(255, 51, 102, 0.3);
+    }
+
+    .control-btn.locate .control-btn-icon {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(37, 99, 235, 0.3));
+      color: #60a5fa;
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+    }
+
+    .control-btn.wipe .control-btn-icon {
+      background: linear-gradient(135deg, rgba(255, 51, 102, 0.3), rgba(204, 0, 68, 0.3));
+      color: #ff3366;
+      box-shadow: 0 4px 15px rgba(255, 51, 102, 0.3);
+    }
+
+    .control-btn.photo .control-btn-icon {
+      background: linear-gradient(135deg, rgba(168, 85, 247, 0.3), rgba(126, 34, 206, 0.3));
+      color: #c084fc;
+      box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3);
+    }
+
+    .control-btn.scream .control-btn-icon {
+      background: linear-gradient(135deg, rgba(255, 107, 53, 0.3), rgba(234, 88, 12, 0.3));
+      color: #ff6b35;
+      box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+    }
+
+    .control-btn-label {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--text-primary);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    .control-btn-desc {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    /* Activity Log */
+    .activity-filters {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .filter-btn {
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      border: 1px solid var(--card-border);
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .filter-btn.active {
+      background: linear-gradient(90deg, var(--primary), var(--accent-purple));
+      border-color: transparent;
+      color: white;
+      box-shadow: 0 0 15px var(--primary-glow);
+    }
+
+    .activity-list {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .activity-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 1rem;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .activity-item:last-child {
+      border-bottom: none;
+    }
+
+    .activity-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+
+    .activity-icon.info {
+      background: rgba(59, 130, 246, 0.25);
+      color: #60a5fa;
+    }
+
+    .activity-icon.warning {
+      background: rgba(255, 107, 53, 0.25);
+      color: var(--warning);
+    }
+
+    .activity-icon.danger {
+      background: rgba(255, 51, 102, 0.25);
+      color: var(--danger);
+    }
+
+    .activity-icon.success {
+      background: rgba(0, 217, 255, 0.25);
+      color: var(--primary);
+    }
+
+    .activity-content {
+      flex: 1;
+    }
+
+    .activity-message {
+      font-size: 0.875rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .activity-time {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* Settings */
+    .settings-section {
+      margin-bottom: 2rem;
+    }
+
+    .settings-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--text-secondary);
+    }
+
+    .settings-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+    }
+
+    .settings-item-label {
+      font-weight: 500;
+    }
+
+    .settings-item-desc {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    .settings-input {
+      background: var(--bg-dark);
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      padding: 0.5rem 0.75rem;
+      color: var(--text-primary);
+      font-size: 0.875rem;
+      width: 200px;
+    }
+
+    .settings-input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      max-width: 400px;
+      width: 90%;
+    }
+
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .modal-desc {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-input {
+      width: 100%;
+      background: var(--bg-dark);
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      padding: 0.75rem;
+      color: var(--text-primary);
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      text-align: center;
+      letter-spacing: 0.5em;
+    }
+
+    .modal-input:focus {
+      outline: none;
+      border-color: var(--danger);
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .modal-btn {
+      flex: 1;
+      padding: 0.75rem;
+      border-radius: 8px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .modal-btn.cancel {
+      background: var(--card-border);
+      color: var(--text-primary);
+    }
+
+    .modal-btn.confirm {
+      background: var(--danger);
+      color: white;
+    }
+
+    .modal-btn:hover {
+      filter: brightness(1.1);
+    }
+
+    /* Toast */
+    .toast-container {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 1001;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .toast {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      animation: slideIn 0.3s ease;
+      min-width: 280px;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    .toast.success {
+      border-color: var(--primary);
+    }
+
+    .toast.warning {
+      border-color: var(--warning);
+    }
+
+    .toast.danger {
+      border-color: var(--danger);
+    }
+
+    .toast-icon {
+      font-size: 1.25rem;
+    }
+
+    .toast.success .toast-icon { color: var(--primary); }
+    .toast.warning .toast-icon { color: var(--warning); }
+    .toast.danger .toast-icon { color: var(--danger); }
+
+    /* Emergency Panel */
+    .emergency-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+
+    .emergency-btn {
+      padding: 2rem;
+      border-radius: 12px;
+      border: 2px solid;
+      background: var(--card-bg);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      text-align: center;
+    }
+
+    .emergency-btn.sos {
+      border-color: var(--danger);
+      background: rgba(255, 51, 102, 0.2);
+    }
+
+    .emergency-btn.sos:hover {
+      background: rgba(255, 51, 102, 0.3);
+    }
+
+    .emergency-btn.fake {
+      border-color: var(--warning);
+      background: rgba(255, 107, 53, 0.2);
+    }
+
+    .emergency-btn.fake:hover {
+      background: rgba(255, 107, 53, 0.3);
+    }
+
+    .emergency-icon {
+      font-size: 3rem;
+      animation: none;
+      text-shadow: 0 0 20px currentColor;
+    }
+
+    .emergency-btn.sos .emergency-icon {
+      color: #ff3366;
+    }
+
+    .emergency-btn.fake .emergency-icon {
+      color: #ff6b35;
+    }
+
+    .emergency-label {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    .emergency-desc {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--card-border);
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-muted);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .sidebar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        height: auto;
+        flex-direction: row;
+        padding: 0.5rem;
+        justify-content: space-around;
+        border-right: none;
+        border-top: 1px solid var(--card-border);
+      }
+
+      .logo, .device-status {
+        display: none;
+      }
+
+      .nav {
+        flex-direction: row;
+        justify-content: space-around;
+      }
+
+      .nav-item {
+        flex-direction: column;
+        gap: 0.25rem;
+        padding: 0.5rem;
+        font-size: 0.65rem;
+      }
+
+      .nav-item .badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+      }
+
+      .main {
+        margin-left: 0;
+        margin-bottom: 70px;
+      }
+
+      .dashboard-grid, .controls-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .security-score-card {
+        grid-column: span 1;
+      }
+
+      .emergency-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="toast-container" id="toastContainer"></div>
+
+  <div class="modal-overlay" id="wipeModal">
+    <div class="modal">
+      <div class="modal-title">⚠️ Wipe Device</div>
+      <div class="modal-desc">This will permanently delete all data on this device. This action cannot be undone. Enter your PIN to confirm.</div>
+      <input type="password" class="modal-input" id="wipePin" placeholder="Enter PIN" maxlength="6">
+      <div class="modal-buttons">
+        <button class="modal-btn cancel" onclick="closeWipeModal()">Cancel</button>
+        <button class="modal-btn confirm" onclick="confirmWipe()">Wipe Data</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-icon">🛡️</div>
+      <div class="logo-text">SecureGuard</div>
+    </div>
+
+    <nav class="nav">
+      <div class="nav-item active" data-page="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>
+        Dashboard
+      </div>
+      <div class="nav-item" data-page="controls">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        Controls
+      </div>
+      <div class="nav-item" data-page="activity">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>
+        </svg>
+        Activity
+      </div>
+      <div class="nav-item" data-page="emergency">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+        </svg>
+        Emergency
+      </div>
+      <div class="nav-item" data-page="settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+        Settings
+      </div>
+    </nav>
+
+    <div class="device-status armed" id="deviceStatus">
+      <div class="status-header">
+        <span class="status-dot"></span>
+        <span id="statusText">Armed</span>
+      </div>
+      <div class="device-name">Samsung Galaxy S24 Ultra</div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main">
+    <!-- Dashboard Page -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <h1 class="page-title">Security Dashboard</h1>
+        <p class="page-subtitle">Real-time protection status and device information</p>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="card security-score-card">
+          <div class="card-header">
+            <span class="card-title">Security Score</span>
+          </div>
+          <div class="score-display">
+            <div class="score-circle">
+              <span class="score-value">95</span>
+            </div>
+            <div class="score-details">
+              <div class="score-item">
+                <span class="score-item-icon green">✓</span>
+                <span>Device Lock Enabled</span>
+              </div>
+              <div class="score-item">
+                <span class="score-item-icon green">✓</span>
+                <span>Location Tracking Active</span>
+              </div>
+              <div class="score-item">
+                <span class="score-item-icon amber">!</span>
+                <span>Screenshot Alert Disabled</span>
+              </div>
+              <div class="score-item">
+                <span class="score-item-icon green">✓</span>
+                <span>SIM Change Detection On</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card status-card">
+          <div class="card-header">
+            <span class="card-title">Protection Status</span>
+          </div>
+          <div class="arm-toggle">
+            <span>Anti-Theft Active</span>
+            <div class="toggle-switch active" id="armToggle" onclick="toggleArm()"></div>
+          </div>
+          <div class="last-arm" id="lastArm">Last armed: Today, 9:42 AM</div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Device Info</span>
+          </div>
+          <div class="device-info-grid">
+            <div class="info-item">
+              <span class="info-label">Model</span>
+              <span class="info-value">Samsung S24 Ultra</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">IMEI</span>
+              <span class="info-value">3584***1892</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">OS</span>
+              <span class="info-value">Android 14</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Storage</span>
+              <span class="info-value">256GB / 512GB</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Location</span>
+          </div>
+          <div class="location-map">
+            <div class="map-marker"></div>
+          </div>
+          <div class="location-coords">
+            <span>Lat: 40.7128° N</span>
+            <span>Lng: 74.0060° W</span>
+          </div>
+          <div class="location-history">
+            <div class="location-history-title">Recent Locations</div>
+            <div class="location-item">
+              <span class="location-item-time">9:30 AM</span>
+              <span>Home - 0.2km away</span>
+            </div>
+            <div class="location-item">
+              <span class="location-item-time">8:15 AM</span>
+              <span>Office - 2.1km away</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Battery</span>
+          </div>
+          <div class="battery-display">
+            <div class="battery-icon">
+              <div class="battery-level" id="batteryLevel"></div>
+            </div>
+            <div>
+              <div class="battery-text" id="batteryText">78%</div>
+              <div class="battery-status">Charging</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">SIM Status</span>
+          </div>
+          <div class="sim-status">
+            <div class="sim-icon">📱</div>
+            <div>
+              <div class="info-value">Verizon Wireless</div>
+              <div class="battery-status">+1 (555) 123-4567</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls Page -->
+    <div class="page" id="page-controls">
+      <div class="page-header">
+        <h1 class="page-title">Remote Controls</h1>
+        <p class="page-subtitle">Execute remote commands on your device</p>
+      </div>
+
+      <div class="controls-grid">
+        <button class="control-btn lock" onclick="lockDevice()">
+          <div class="control-btn-icon">🔒</div>
+          <span class="control-btn-label">Lock Device</span>
+          <span class="control-btn-desc">Immediately lock the device</span>
+        </button>
+
+        <button class="control-btn alarm" onclick="triggerAlarm()">
+          <div class="control-btn-icon">🔔</div>
+          <span class="control-btn-label">Play Alarm</span>
+          <span class="control-btn-desc">Maximum volume siren</span>
+        </button>
+
+        <button class="control-btn locate" onclick="locateDevice()">
+          <div class="control-btn-icon">📍</div>
+          <span class="control-btn-label">Locate</span>
+          <span class="control-btn-desc">Get current GPS location</span>
+        </button>
+
+        <button class="control-btn wipe" onclick="openWipeModal()">
+          <div class="control-btn-icon">💣</div>
+          <span class="control-btn-label">Wipe Data</span>
+          <span class="control-btn-desc">Factory reset device</span>
+        </button>
+
+        <button class="control-btn photo" onclick="takePhoto()">
+          <div class="control-btn-icon">📷</div>
+          <span class="control-btn-label">Take Photo</span>
+          <span class="control-btn-desc">Capture front camera</span>
+        </button>
+
+        <button class="control-btn scream" onclick="screamAlarm()">
+          <div class="control-btn-icon">📢</div>
+          <span class="control-btn-label">Scream Mode</span>
+          <span class="control-btn-desc">Loud distress siren</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Activity Page -->
+    <div class="page" id="page-activity">
+      <div class="page-header">
+        <h1 class="page-title">Activity Log</h1>
+        <p class="page-subtitle">Recent security events and actions</p>
+      </div>
+
+      <div class="card">
+        <div class="activity-filters">
+          <button class="filter-btn active" data-filter="all">All</button>
+          <button class="filter-btn" data-filter="info">Info</button>
+          <button class="filter-btn" data-filter="warning">Warning</button>
+          <button class="filter-btn" data-filter="danger">Alerts</button>
+        </div>
+        <div class="activity-list" id="activityList"></div>
+      </div>
+    </div>
+
+    <!-- Emergency Page -->
+    <div class="page" id="page-emergency">
+      <div class="page-header">
+        <h1 class="page-title">Emergency</h1>
+        <p class="page-subtitle">Urgent actions and distress features</p>
+      </div>
+
+      <div class="emergency-grid">
+        <button class="emergency-btn sos" onclick="triggerSOS()">
+          <span class="emergency-icon">🆘</span>
+          <span class="emergency-label">SOS Alert</span>
+          <span class="emergency-desc">Send emergency location to contacts</span>
+        </button>
+
+        <button class="emergency-btn fake" onclick="fakeShutdown()">
+          <span class="emergency-icon">⏻</span>
+          <span class="emergency-label">Fake Shutdown</span>
+          <span class="emergency-desc">Show fake power-off screen</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Settings Page -->
+    <div class="page" id="page-settings">
+      <div class="page-header">
+        <h1 class="page-title">Settings</h1>
+        <p class="page-subtitle">Configure anti-theft protection features</p>
+      </div>
+
+      <div class="card">
+        <div class="settings-section">
+          <div class="settings-title">Detection Features</div>
+          <div class="settings-item">
+            <div>
+              <div class="settings-item-label">SIM Change Alert</div>
+              <div class="settings-item-desc">Notify when SIM card is changed</div>
+            </div>
+            <div class="toggle-switch active" onclick="toggleSetting(this)"></div>
+          </div>
+          <div class="settings-item">
+            <div>
+              <div class="settings-item-label">Motion Detection</div>
+              <div class="settings-item-desc">Trigger alarm on device movement</div>
+            </div>
+            <div class="toggle-switch active" onclick="toggleSetting(this)"></div>
+          </div>
+          <div class="settings-item">
+            <div>
+              <div class="settings-item-label">Screenshot Detection</div>
+              <div class="settings-item-desc">Alert when screenshot is taken</div>
+            </div>
+            <div class="toggle-switch" onclick="toggleSetting(this)"></div>
+          </div>
+          <div class="settings-item">
+            <div>
+              <div class="settings-item-label">Low Battery Alert</div>
+              <div class="settings-item-desc">Auto-arm when battery is low</div>
+            </div>
+            <div class="toggle-switch active" onclick="toggleSetting(this)"></div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-title">Emergency Contacts</div>
+          <div class="settings-item">
+            <div>
+              <div class="settings-item-label">Primary Contact</div>
+            </div>
+            <input type="tel" class="settings-input" value="+1 (555) 987-6543" placeholder="Phone number">
+          </div>
+          <div class="settings-item">
+            <div>
+              <div class="settings-item-label">Secondary Contact</div>
+            </div>
+            <input type="tel" class="settings-input" value="+1 (555) 456-7890" placeholder="Phone number">
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-title">Security</div>
+          <div class="settings-item">
+            <div>
+              <div class="settings-item-label">Admin PIN</div>
+            </div>
+            <input type="password" class="settings-input" value="123456" placeholder="6-digit PIN">
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // State
+    let isArmed = true;
+    let activities = [
+      { type: 'success', message: 'Device locked successfully', time: '10:23 AM' },
+      { type: 'info', message: 'Location updated: Home', time: '10:15 AM' },
+      { type: 'success', message: 'Anti-theft protection enabled', time: '9:42 AM' },
+      { type: 'warning', message: 'Low battery warning sent', time: '9:30 AM' },
+      { type: 'info', message: 'Battery at 78% - Charging', time: '9:28 AM' },
+      { type: 'danger', message: 'Failed unlock attempt detected', time: '8:45 AM' },
+      { type: 'info', message: 'SIM card verified - Verizon', time: '8:15 AM' },
+    ];
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      renderActivities();
+      updateBattery();
+      setupNavigation();
+      setupFilters();
+    });
+
+    // Navigation
+    function setupNavigation() {
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const page = item.dataset.page;
+          document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+          item.classList.add('active');
+          document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+          document.getElementById(`page-${page}`).classList.add('active');
+        });
+      });
+    }
+
+    // Filters
+    function setupFilters() {
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          renderActivities(btn.dataset.filter);
+        });
+      });
+    }
+
+    // Activities
+    function renderActivities(filter = 'all') {
+      const list = document.getElementById('activityList');
+      const filtered = filter === 'all' ? activities : activities.filter(a => a.type === filter);
+      list.innerHTML = filtered.map(a => `
+        <div class="activity-item">
+          <div class="activity-icon ${a.type}">${getActivityIcon(a.type)}</div>
+          <div class="activity-content">
+            <div class="activity-message">${a.message}</div>
+            <div class="activity-time">${a.time}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function getActivityIcon(type) {
+      switch(type) {
+        case 'success': return '✓';
+        case 'warning': return '!';
+        case 'danger': return '⚠';
+        case 'info': return 'i';
+      }
+    }
+
+    // Arm Toggle
+    function toggleArm() {
+      isArmed = !isArmed;
+      const toggle = document.getElementById('armToggle');
+      const status = document.getElementById('deviceStatus');
+      const statusText = document.getElementById('statusText');
+      const lastArm = document.getElementById('lastArm');
+
+      toggle.classList.toggle('active', isArmed);
+      status.classList.toggle('armed', isArmed);
+      status.classList.toggle('disarmed', !isArmed);
+      statusText.textContent = isArmed ? 'Armed' : 'Disarmed';
+
+      if (isArmed) {
+        lastArm.textContent = `Last armed: ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+        addActivity('success', 'Anti-theft protection enabled');
+        showToast('Protection enabled', 'success');
+      } else {
+        lastArm.textContent = `Last disarmed: ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+        addActivity('warning', 'Anti-theft protection disabled');
+        showToast('Protection disabled', 'warning');
+      }
+    }
+
+    function addActivity(type, message) {
+      activities.unshift({
+        type,
+        message,
+        time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+      });
+      renderActivities(document.querySelector('.filter-btn.active')?.dataset.filter || 'all');
+    }
+
+    // Controls
+    function lockDevice() {
+      addActivity('success', 'Remote lock command sent');
+      showToast('Device locked', 'success');
+    }
+
+    function triggerAlarm() {
+      addActivity('danger', 'Alarm triggered remotely');
+      showToast('Alarm playing!', 'danger');
+    }
+
+    function locateDevice() {
+      addActivity('info', 'Location request sent');
+      showToast('Location: 40.7128°N, 74.0060°W', 'success');
+    }
+
+    function openWipeModal() {
+      document.getElementById('wipeModal').classList.add('active');
+      document.getElementById('wipePin').value = '';
+      document.getElementById('wipePin').focus();
+    }
+
+    function closeWipeModal() {
+      document.getElementById('wipeModal').classList.remove('active');
+    }
+
+    function confirmWipe() {
+      const pin = document.getElementById('wipePin').value;
+      if (pin === '123456' || pin.length === 6) {
+        addActivity('danger', 'Factory reset initiated');
+        showToast('Device wiped successfully', 'danger');
+        closeWipeModal();
+      } else {
+        showToast('Invalid PIN', 'danger');
+      }
+    }
+
+    function takePhoto() {
+      addActivity('info', 'Camera capture triggered');
+      showToast('Photo captured and saved', 'success');
+    }
+
+    function screamAlarm() {
+      addActivity('danger', 'Scream alarm activated');
+      showToast('Scream alarm playing!', 'danger');
+    }
+
+    // Emergency
+    function triggerSOS() {
+      addActivity('danger', 'SOS alert sent to emergency contacts');
+      showToast('SOS sent to 2 contacts', 'danger');
+    }
+
+    function fakeShutdown() {
+      addActivity('warning', 'Fake shutdown screen activated');
+      showToast('Device showing fake power-off', 'warning');
+    }
+
+    // Settings
+    function toggleSetting(el) {
+      el.classList.toggle('active');
+      const label = el.previousElementSibling.querySelector('.settings-item-label').textContent;
+      const status = el.classList.contains('active') ? 'enabled' : 'disabled';
+      addActivity('info', `${label} ${status}`);
+    }
+
+    // Battery
+    function updateBattery() {
+      const level = 78;
+      const el = document.getElementById('batteryLevel');
+      const text = document.getElementById('batteryText');
+
+      el.style.width = level + '%';
+      text.textContent = level + '%';
+
+      el.classList.remove('warning', 'critical');
+      if (level < 20) el.classList.add('critical');
+      else if (level < 40) el.classList.add('warning');
+    }
+
+    // Toast
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.innerHTML = `
+        <span class="toast-icon">${type === 'success' ? '✓' : type === 'warning' ? '!' : '⚠'}</span>
+        <span>${message}</span>
+      `;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    // Close modal on outside click
+    document.getElementById('wipeModal').addEventListener('click', (e) => {
+      if (e.target.id === 'wipeModal') closeWipeModal();
+    });
+  </script>
+</body>
+</html>
